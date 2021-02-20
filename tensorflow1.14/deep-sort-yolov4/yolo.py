@@ -14,6 +14,9 @@ from yolo4.utils import letterbox_image
 import os
 from keras.utils import multi_gpu_model
 
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
+
 class YOLO(object):
     def __init__(self):
         self.model_path = 'model_data/yolo4.h5'
@@ -24,7 +27,16 @@ class YOLO(object):
         self.iou = 0.5
         self.class_names = self._get_class()
         self.anchors = self._get_anchors()
-        self.sess = K.get_session()
+        
+        # self.sess = K.get_session()
+
+        self.config = tf.ConfigProto()
+        self.config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
+        self.config.log_device_placement = True  # to log device placement (on which device the operation ran)
+                                            # (nothing gets printed in Jupyter, only if you run it standalone)
+        self.sess = tf.Session(config=self.config)
+        set_session(self.sess)  # set this TensorFlow session as the default session for Keras
+
         self.model_image_size = (416, 416)  # fixed size or (None, None)
         self.is_fixed_size = self.model_image_size != (None, None)
         self.boxes, self.scores, self.classes = self.generate()
@@ -100,7 +112,7 @@ class YOLO(object):
         return_class_names = []
         for i, c in reversed(list(enumerate(out_classes))):
             predicted_class = self.class_names[c]
-            if predicted_class != 'person':  # Modify to detect other classes.
+            if predicted_class not in ('person', 'car', 'bus', 'truck'):  # Modify to detect other classes.
                 continue
             box = out_boxes[i]
             score = out_scores[i]

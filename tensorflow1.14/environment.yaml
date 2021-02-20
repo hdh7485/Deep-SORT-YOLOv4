@@ -1,0 +1,10 @@
+name: deepsort
+dependencies:
+  - python=2.7
+  - tensorflow-gpu=1.14
+  - pip:
+    - opencv-python=4.2.0
+    - keras=2.3.1
+    - imutils=0.5.3
+    - numpy=1.18.2
+    - sklearn
